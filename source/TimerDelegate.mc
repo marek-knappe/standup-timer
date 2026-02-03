@@ -22,21 +22,21 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
     private function toggleTimer() as Boolean {
         if (gStatus == STATUS_READY) {
             gStatus = STATUS_RUNNING;
-            // Short vibrate when starting
+            // Quick vibrate when starting
             if (Attention has :vibrate) {
-                Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+                Attention.vibrate([new Attention.VibeProfile(100, 100)]);
             }
         } else if (gStatus == STATUS_RUNNING) {
             gStatus = STATUS_PAUSED;
-            // Short vibrate when pausing
+            // Longer vibrate when pausing
             if (Attention has :vibrate) {
                 Attention.vibrate([new Attention.VibeProfile(100, 200)]);
             }
         } else if (gStatus == STATUS_PAUSED) {
             gStatus = STATUS_RUNNING;
-            // Short vibrate when resuming
+            // Quick vibrate when resuming
             if (Attention has :vibrate) {
-                Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+                Attention.vibrate([new Attention.VibeProfile(100, 100)]);
             }
         } else if (gStatus == STATUS_FINISHED) {
             // Stop vibration and reset
@@ -98,9 +98,9 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
         // Running or paused - reset and start again
         TimerView.resetTimer();
         gStatus = STATUS_RUNNING;
-        // Short vibrate when starting
+        // Quick vibrate when starting
         if (Attention has :vibrate) {
-            Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+            Attention.vibrate([new Attention.VibeProfile(100, 100)]);
         }
         WatchUi.requestUpdate();
         return true;
