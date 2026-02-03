@@ -70,8 +70,8 @@ jobs:
         run: |
           export PATH="$HOME/connectiq-sdk/bin:$PATH"
           
-          # Update version in manifest
-          sed -i 's/version="[^"]*"/version="${{ steps.version.outputs.VERSION }}"/g' manifest.xml
+          # Update version in manifest (only the app version, not XML version)
+          sed -i 's/type="watch-app" version="[^"]*"/type="watch-app" version="${{ steps.version.outputs.VERSION }}"/g' manifest.xml
           
           # Build for all devices (creates .iq package)
           monkeyc -e -w -r \
