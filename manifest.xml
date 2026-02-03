@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
-    <iq:application entry="StandupTimerApp" id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" 
+    <iq:application entry="StandupTimerApp" id="506012ad-05a4-4b27-9220-627640d50492" 
                     launcherIcon="@Drawables.LauncherIcon" minSdkVersion="3.0.0" 
                     name="@Strings.AppName" type="watch-app" version="1.0.0">
         <iq:products>
