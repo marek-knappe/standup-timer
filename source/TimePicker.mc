@@ -42,31 +42,36 @@ class TimePicker extends WatchUi.View {
         var w = dc.getWidth();
         var h = dc.getHeight();
 
-        dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+        // Colors based on dark/light mode
+        var bgColor = gDarkMode ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
+        var textColor = gDarkMode ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
+        var dimColor = gDarkMode ? Graphics.COLOR_DK_GRAY : Graphics.COLOR_LT_GRAY;
+
+        dc.setColor(bgColor, bgColor);
         dc.clear();
 
         // Title
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(textColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w/2, h/4, Graphics.FONT_SMALL, _title, 
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Minutes (blue if editing)
-        dc.setColor(_editMin ? Graphics.COLOR_BLUE : Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(_editMin ? Graphics.COLOR_BLUE : dimColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w/2 - 50, h/2, Graphics.FONT_NUMBER_MEDIUM, _minutes.format("%02d"),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Colon
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(textColor, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w/2, h/2, Graphics.FONT_NUMBER_MEDIUM, ":",
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Seconds (blue if editing)
-        dc.setColor(_editMin ? Graphics.COLOR_DK_GRAY : Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(_editMin ? dimColor : Graphics.COLOR_BLUE, Graphics.COLOR_TRANSPARENT);
         dc.drawText(w/2 + 50, h/2, Graphics.FONT_NUMBER_MEDIUM, _seconds.format("%02d"),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
         // Hint - smaller text
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(dimColor, Graphics.COLOR_TRANSPARENT);
         var hint = _editMin ? "UP/DN: min, BTN: next" : "UP/DN: sec, BTN: save";
         dc.drawText(w/2, h*3/4 + 10, Graphics.FONT_XTINY, hint,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -185,6 +190,11 @@ class TimePickerDelegate extends WatchUi.BehaviorDelegate {
             // Update settings menu labels
             if (gSettingsMenu != null) {
                 gSettingsMenu.updateLabels();
+            }
+            
+            // Update alert sub-menu time label if open
+            if (gAlertSubMenu != null) {
+                gAlertSubMenu.updateTimeLabel();
             }
         }
         WatchUi.popView(WatchUi.SLIDE_RIGHT);

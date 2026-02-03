@@ -25,6 +25,8 @@ class SettingsMenu extends WatchUi.Menu2 {
         
         addItem(new WatchUi.ToggleMenuItem("Show Clock", {:enabled => "On", :disabled => "Off"}, 
             :clock, gShowClock, {}));
+        addItem(new WatchUi.ToggleMenuItem("Dark Mode", {:enabled => "On", :disabled => "Off"}, 
+            :darkmode, gDarkMode, {}));
         addItem(new WatchUi.MenuItem("Exit App", null, :exit, {}));
         
         gSettingsMenu = self;
@@ -81,6 +83,11 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
                 gShowClock = (item as WatchUi.ToggleMenuItem).isEnabled();
                 TimerView.saveSettings();
             }
+        } else if (id == :darkmode) {
+            if (item instanceof WatchUi.ToggleMenuItem) {
+                gDarkMode = (item as WatchUi.ToggleMenuItem).isEnabled();
+                TimerView.saveSettings();
+            }
         } else if (id == :exit) {
             System.exit();
         }
@@ -92,6 +99,9 @@ class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
         WatchUi.popView(WatchUi.SLIDE_DOWN);
     }
 }
+
+// Global reference to alert sub-menu for updating
+var gAlertSubMenu as AlertSubMenu?;
 
 // Sub-menu for Alert 1 or Alert 2
 class AlertSubMenu extends WatchUi.Menu2 {
@@ -108,9 +118,20 @@ class AlertSubMenu extends WatchUi.Menu2 {
         addItem(new WatchUi.ToggleMenuItem("Enabled", {:enabled => "On", :disabled => "Off"}, 
             :enabled, isEnabled, {}));
         addItem(new WatchUi.MenuItem("Time", SettingsMenu.formatMin(seconds), :time, {}));
+        
+        gAlertSubMenu = self;
     }
     
     function getAlertNum() as Number { return _alertNum; }
+    
+    // Update the time label after changes
+    function updateTimeLabel() as Void {
+        var item = getItem(1);
+        if (item != null) {
+            var seconds = (_alertNum == 1) ? gAlert1Seconds : gAlert2Seconds;
+            item.setSubLabel(SettingsMenu.formatMin(seconds));
+        }
+    }
 }
 
 class AlertSubMenuDelegate extends WatchUi.Menu2InputDelegate {
@@ -147,6 +168,7 @@ class AlertSubMenuDelegate extends WatchUi.Menu2InputDelegate {
     }
 
     function onBack() as Void {
+        gAlertSubMenu = null;
         WatchUi.popView(WatchUi.SLIDE_RIGHT);
     }
 }

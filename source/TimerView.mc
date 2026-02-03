@@ -26,6 +26,7 @@ var gAlert1Enabled as Boolean = true;      // Alert 1 on/off
 var gAlert2Enabled as Boolean = true;      // Alert 2 on/off
 var gFinalCountdown as Number = 5;         // 5, 3, or 0 (none)
 var gShowClock as Boolean = true;
+var gDarkMode as Boolean = true;           // Dark mode (true) or Light mode (false)
 var gTimerView as TimerView?;
 
 class TimerView extends WatchUi.View {
@@ -110,17 +111,18 @@ class TimerView extends WatchUi.View {
         var width = dc.getWidth();
         var height = dc.getHeight();
 
-        // Determine colors based on state
-        var bgColor = Graphics.COLOR_BLACK;
-        var textColor = Graphics.COLOR_WHITE;
+        // Determine colors based on state and dark/light mode
+        var bgColor = gDarkMode ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
+        var textColor = gDarkMode ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
         var statusText = "";
 
         if (gStatus == STATUS_FINISHED) {
-            bgColor = Graphics.COLOR_WHITE;
-            textColor = Graphics.COLOR_BLACK;
+            // Invert colors when finished
+            bgColor = gDarkMode ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
+            textColor = gDarkMode ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
             statusText = "TIME'S UP!";
         } else if (gStatus == STATUS_PAUSED) {
-            textColor = Graphics.COLOR_LT_GRAY;
+            textColor = gDarkMode ? Graphics.COLOR_LT_GRAY : Graphics.COLOR_DK_GRAY;
             statusText = "PAUSED";
         } else if (gStatus == STATUS_READY) {
             statusText = "READY";
@@ -132,7 +134,7 @@ class TimerView extends WatchUi.View {
             } else if (gAlert2Enabled && gRemainingSeconds <= gAlert2Seconds) {
                 textColor = 0xFF00FF; // Magenta
             } else if (gAlert1Enabled && gRemainingSeconds <= gAlert1Seconds) {
-                textColor = Graphics.COLOR_YELLOW;
+                textColor = gDarkMode ? Graphics.COLOR_YELLOW : 0xCC8800; // Darker yellow for light mode
             }
         }
 
@@ -153,23 +155,27 @@ class TimerView extends WatchUi.View {
         dc.drawText(width / 2, timerY - 25, Graphics.FONT_NUMBER_HOT, timeStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        // Draw status
+        // Draw status below timer
         dc.drawText(width / 2, timerY + 45, Graphics.FONT_SMALL, statusText,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
     }
 
     private function drawClock(dc as Dc, width as Number) as Void {
-        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_DK_GRAY);
-        dc.fillRectangle(0, 0, width, 45);
+        var clockBg = gDarkMode ? Graphics.COLOR_DK_GRAY : Graphics.COLOR_LT_GRAY;
+        var clockText = gDarkMode ? Graphics.COLOR_WHITE : Graphics.COLOR_BLACK;
+        
+        // Move clock bar down for round screens
+        dc.setColor(clockBg, clockBg);
+        dc.fillRectangle(0, 20, width, 35);
 
         var clockTime = System.getClockTime();
         var timeStr = clockTime.hour.format("%02d") + ":" + 
                       clockTime.min.format("%02d") + ":" + 
                       clockTime.sec.format("%02d");
 
-        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(width / 2, 22, Graphics.FONT_MEDIUM, timeStr,
+        dc.setColor(clockText, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(width / 2, 38, Graphics.FONT_SMALL, timeStr,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
@@ -209,6 +215,9 @@ class TimerView extends WatchUi.View {
         
         var clk = Storage.getValue("clock");
         if (clk != null && clk instanceof Boolean) { gShowClock = clk as Boolean; }
+        
+        var dm = Storage.getValue("darkmode");
+        if (dm != null && dm instanceof Boolean) { gDarkMode = dm as Boolean; }
     }
 
     // Save settings to storage
@@ -220,6 +229,7 @@ class TimerView extends WatchUi.View {
         Storage.setValue("alert2en", gAlert2Enabled);
         Storage.setValue("finalcd", gFinalCountdown);
         Storage.setValue("clock", gShowClock);
+        Storage.setValue("darkmode", gDarkMode);
     }
 
     // Reset timer to ready state
