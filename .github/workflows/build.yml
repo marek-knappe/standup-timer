@@ -13,6 +13,9 @@ env:
   PRODUCTION_APP_ID: "1a84e0de-c52e-48b2-b7ef-05c9d51ca391"
   BETA_APP_ID: "41c9373a-18fc-45ac-b68a-655b479cc311"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
