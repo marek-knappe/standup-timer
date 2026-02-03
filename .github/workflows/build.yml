@@ -32,7 +32,8 @@ jobs:
             VERSION="${GITHUB_REF#refs/tags/v}"
           else
             # Use base version with commit hash for dev builds
-            VERSION="1.0.0-dev.$(git rev-parse --short HEAD)"
+            # Garmin format: X.Y.Z.suffix (no hyphens allowed)
+            VERSION="1.0.0.dev$(git rev-parse --short HEAD)"
           fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
