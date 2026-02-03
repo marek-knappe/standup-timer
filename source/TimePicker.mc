@@ -65,14 +65,17 @@ class TimePicker extends WatchUi.View {
         dc.drawText(w/2 + 50, h/2, Graphics.FONT_NUMBER_MEDIUM, _seconds.format("%02d"),
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        // Hint
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(w/2, h*3/4, Graphics.FONT_XTINY, "BTN: switch, BACK: save",
+        // Hint - smaller text
+        dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+        var hint = _editMin ? "UP/DN: min, BTN: next" : "UP/DN: sec, BTN: save";
+        dc.drawText(w/2, h*3/4 + 10, Graphics.FONT_XTINY, hint,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
-    function toggleEdit() as Void { _editMin = !_editMin; WatchUi.requestUpdate(); }
     function isEditingMin() as Boolean { return _editMin; }
+    
+    // Switch from minutes to seconds
+    function goToSeconds() as Void { _editMin = false; WatchUi.requestUpdate(); }
 
     function incMin() as Void {
         var v = (_minutes + 1) * 60 + _seconds;
@@ -134,11 +137,24 @@ class TimePickerDelegate extends WatchUi.BehaviorDelegate {
 
     function onSelect() as Boolean {
         var p = gCurrentPicker;
-        if (p != null) { p.toggleEdit(); }
+        if (p != null) {
+            if (p.isEditingMin()) {
+                // Move from minutes to seconds
+                p.goToSeconds();
+            } else {
+                // On seconds - save and go back
+                saveAndClose();
+            }
+        }
         return true;
     }
 
     function onBack() as Boolean {
+        saveAndClose();
+        return true;
+    }
+    
+    private function saveAndClose() as Void {
         var p = gCurrentPicker;
         if (p != null) {
             var val = p.getValue();
@@ -146,10 +162,14 @@ class TimePickerDelegate extends WatchUi.BehaviorDelegate {
 
             if (id == :duration) {
                 gDurationSeconds = val;
-                // Adjust alerts if needed
-                if (gAlert1Seconds >= val) { gAlert1Seconds = val - 60; }
-                if (gAlert1Seconds < 0) { gAlert1Seconds = 0; }
-                if (gAlert2Seconds >= gAlert1Seconds) { gAlert2Seconds = gAlert1Seconds - 30; }
+                // Alert 1 = half of duration
+                gAlert1Seconds = val / 2;
+                // Round to nearest 5 seconds
+                gAlert1Seconds = (gAlert1Seconds / 5) * 5;
+                // Don't touch Alert 2, but make sure it's valid
+                if (gAlert2Seconds >= gAlert1Seconds) { 
+                    gAlert2Seconds = gAlert1Seconds - 30; 
+                }
                 if (gAlert2Seconds < 0) { gAlert2Seconds = 0; }
             } else if (id == :alert1) {
                 gAlert1Seconds = val;
@@ -168,6 +188,5 @@ class TimePickerDelegate extends WatchUi.BehaviorDelegate {
             }
         }
         WatchUi.popView(WatchUi.SLIDE_RIGHT);
-        return true;
     }
 }

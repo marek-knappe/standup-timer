@@ -18,8 +18,8 @@ enum TimerStatus {
 var gStatus as TimerStatus = STATUS_READY;
 var gRemainingSeconds as Number = 900;
 var gDurationSeconds as Number = 900;      // 15 min default
-var gAlert1Seconds as Number = 300;        // 5 min default
-var gAlert2Seconds as Number = 60;         // 1 min default
+var gAlert1Seconds as Number = 450;        // Half of duration (7:30)
+var gAlert2Seconds as Number = 60;         // 1 min before end
 var gAlert1Fired as Boolean = false;
 var gAlert2Fired as Boolean = false;
 var gShowClock as Boolean = true;
@@ -154,12 +154,6 @@ class TimerView extends WatchUi.View {
         dc.drawText(width / 2, timerY + 45, Graphics.FONT_SMALL, statusText,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
-        // Draw hint when ready
-        if (gStatus == STATUS_READY) {
-            dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(width / 2, height - 40, Graphics.FONT_XTINY, "UP/DOWN for Settings",
-                Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-        }
     }
 
     private function drawClock(dc as Dc, width as Number) as Void {

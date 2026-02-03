@@ -27,15 +27,20 @@ A simple, focused countdown timer for Garmin watches - perfect for stand-up meet
 | Paused | Tap / Select | Resume timer |
 | Paused | Back | Reset & restart |
 | Finished | Tap / Select | Reset to ready |
-| Finished | Back | Reset & restart |
+| Finished | Back | Reset to ready (no auto-start) |
 
 ## Settings
 
 - **Duration**: Set timer length (1-90 minutes)
-- **Alert 1**: First warning time (turns yellow)
-- **Alert 2**: Second warning time (turns magenta)
+- **Alert 1**: First warning time (turns yellow) - *auto-set to half of duration when you change duration*
+- **Alert 2**: Second warning time (turns magenta) - *default 1 minute, unchanged when duration changes*
 - **Show Clock**: Toggle clock display at top
 - **Exit App**: Close the application
+
+### Alert Behavior
+- When you change **Duration**, Alert 1 automatically adjusts to **half the duration**
+- Alert 2 stays at your last setting (default: 1 minute before end)
+- You can manually override both alerts anytime
 
 ## Vibration Patterns
 

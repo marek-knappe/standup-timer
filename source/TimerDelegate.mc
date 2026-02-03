@@ -1,6 +1,7 @@
 import Toybox.Lang;
 import Toybox.WatchUi;
 import Toybox.System;
+import Toybox.Attention;
 
 class TimerDelegate extends WatchUi.BehaviorDelegate {
 
@@ -21,6 +22,10 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
     private function toggleTimer() as Boolean {
         if (gStatus == STATUS_READY) {
             gStatus = STATUS_RUNNING;
+            // Short vibrate when starting
+            if (Attention has :vibrate) {
+                Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+            }
         } else if (gStatus == STATUS_RUNNING) {
             gStatus = STATUS_PAUSED;
         } else if (gStatus == STATUS_PAUSED) {
@@ -68,17 +73,27 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
         return false;
     }
 
-    // Back button - reset and restart timer
+    // Back button - reset and restart timer (except when finished)
     function onBack() as Boolean {
         if (gStatus == STATUS_READY) {
             return true; // Do nothing, block exit
         }
-        // Reset timer and start it again
-        if (gTimerView != null) {
-            gTimerView.stopFinishedVibration();
+        if (gStatus == STATUS_FINISHED) {
+            // When time is up, just reset (don't start)
+            if (gTimerView != null) {
+                gTimerView.stopFinishedVibration();
+            }
+            TimerView.resetTimer();
+            WatchUi.requestUpdate();
+            return true;
         }
+        // Running or paused - reset and start again
         TimerView.resetTimer();
-        gStatus = STATUS_RUNNING; // Start immediately
+        gStatus = STATUS_RUNNING;
+        // Short vibrate when starting
+        if (Attention has :vibrate) {
+            Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+        }
         WatchUi.requestUpdate();
         return true;
     }
