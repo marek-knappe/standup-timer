@@ -10,13 +10,14 @@ on:
   workflow_dispatch:
 
 env:
-  SDK_VERSION: "8.4.0"
   PRODUCTION_APP_ID: "1a84e0de-c52e-48b2-b7ef-05c9d51ca391"
   BETA_APP_ID: "41c9373a-18fc-45ac-b68a-655b479cc311"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/matco/connectiq-tester:latest
     
     steps:
       - name: Checkout code
@@ -27,9 +28,9 @@ jobs:
       - name: Determine version
         id: version
         run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          if echo "${{ github.ref }}" | grep -q "refs/tags/v"; then
             # Extract version from tag (v1.0.0 -> 1.0.0)
-            VERSION="${GITHUB_REF#refs/tags/v}"
+            VERSION=$(echo "${{ github.ref }}" | sed 's|refs/tags/v||')
           else
             # Use base version with commit hash for dev builds
             # Garmin format: X.Y.Z.suffix (no hyphens allowed)
@@ -37,28 +38,6 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "Building version: $VERSION"
-
-      - name: Set up Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Cache Connect IQ SDK
-        id: cache-sdk
-        uses: actions/cache@v4
-        with:
-          path: ~/connectiq-sdk
-          key: connectiq-sdk-${{ env.SDK_VERSION }}
-
-      - name: Download Connect IQ SDK
-        if: steps.cache-sdk.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p ~/connectiq-sdk
-          cd ~/connectiq-sdk
-          curl -L -o sdk.zip "https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-lin-${{ env.SDK_VERSION }}-2025-12-03-5122605dc.zip"
-          unzip -q sdk.zip
-          rm sdk.zip
 
       - name: Set up developer key
         run: |
@@ -69,8 +48,6 @@ jobs:
 
       - name: Build Production version
         run: |
-          export PATH="$HOME/connectiq-sdk/bin:$PATH"
-          
           # Update version in manifest (only the app version, not XML version)
           sed -i 's/type="watch-app" version="[^"]*"/type="watch-app" version="${{ steps.version.outputs.VERSION }}"/g' manifest.xml
           
@@ -84,8 +61,6 @@ jobs:
 
       - name: Build Beta version
         run: |
-          export PATH="$HOME/connectiq-sdk/bin:$PATH"
-          
           # Modify manifest for beta (app ID already has version from previous step)
           sed -i 's/${{ env.PRODUCTION_APP_ID }}/${{ env.BETA_APP_ID }}/g' manifest.xml
           
