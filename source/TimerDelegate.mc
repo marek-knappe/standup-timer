@@ -28,8 +28,16 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
             }
         } else if (gStatus == STATUS_RUNNING) {
             gStatus = STATUS_PAUSED;
+            // Short vibrate when pausing
+            if (Attention has :vibrate) {
+                Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+            }
         } else if (gStatus == STATUS_PAUSED) {
             gStatus = STATUS_RUNNING;
+            // Short vibrate when resuming
+            if (Attention has :vibrate) {
+                Attention.vibrate([new Attention.VibeProfile(100, 200)]);
+            }
         } else if (gStatus == STATUS_FINISHED) {
             // Stop vibration and reset
             if (gTimerView != null) {
