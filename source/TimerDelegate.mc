@@ -81,7 +81,7 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
         return false;
     }
 
-    // Back button - reset and restart timer (except when finished)
+    // Back button - reset timer
     function onBack() as Boolean {
         if (gStatus == STATUS_READY) {
             return true; // Do nothing, block exit
@@ -95,7 +95,13 @@ class TimerDelegate extends WatchUi.BehaviorDelegate {
             WatchUi.requestUpdate();
             return true;
         }
-        // Running or paused - reset and start again
+        if (gStatus == STATUS_PAUSED) {
+            // When paused, just reset (don't start)
+            TimerView.resetTimer();
+            WatchUi.requestUpdate();
+            return true;
+        }
+        // Running - reset and start again
         TimerView.resetTimer();
         gStatus = STATUS_RUNNING;
         // Quick vibrate when starting

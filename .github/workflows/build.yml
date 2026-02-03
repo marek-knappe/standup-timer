@@ -1,0 +1,104 @@
+name: Build Connect IQ Apps
+
+on:
+  push:
+    branches: [main, master]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  SDK_VERSION: "8.4.0"
+  PRODUCTION_APP_ID: "1a84e0de-c52e-48b2-b7ef-05c9d51ca391"
+  BETA_APP_ID: "41c9373a-18fc-45ac-b68a-655b479cc311"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Cache Connect IQ SDK
+        id: cache-sdk
+        uses: actions/cache@v4
+        with:
+          path: ~/connectiq-sdk
+          key: connectiq-sdk-${{ env.SDK_VERSION }}
+
+      - name: Download Connect IQ SDK
+        if: steps.cache-sdk.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/connectiq-sdk
+          cd ~/connectiq-sdk
+          curl -L -o sdk.zip "https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-lin-${{ env.SDK_VERSION }}-2025-12-03-5122605dc.zip"
+          unzip -q sdk.zip
+          rm sdk.zip
+
+      - name: Set up developer key
+        run: |
+          echo "${{ secrets.DEVELOPER_KEY_BASE64 }}" | base64 -d > developer_key.der
+
+      - name: Create output directory
+        run: mkdir -p dist
+
+      - name: Build Production version
+        run: |
+          export PATH="$HOME/connectiq-sdk/bin:$PATH"
+          
+          # Build for all devices (creates .iq package)
+          monkeyc -e -w -r \
+            -f monkey.jungle \
+            -o dist/standup-timer.iq \
+            -y developer_key.der
+          
+          echo "Production build complete"
+
+      - name: Build Beta version
+        run: |
+          export PATH="$HOME/connectiq-sdk/bin:$PATH"
+          
+          # Modify manifest for beta
+          sed -i 's/${{ env.PRODUCTION_APP_ID }}/${{ env.BETA_APP_ID }}/g' manifest.xml
+          
+          # Modify app name for beta
+          sed -i 's/>Stand-up Timer</>Stand-up Timer β</g' resources/strings.xml
+          
+          # Build beta version
+          monkeyc -e -w -r \
+            -f monkey.jungle \
+            -o dist/standup-timer-beta.iq \
+            -y developer_key.der
+          
+          echo "Beta build complete"
+
+      - name: Upload Production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standup-timer-production
+          path: dist/standup-timer.iq
+
+      - name: Upload Beta artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: standup-timer-beta
+          path: dist/standup-timer-beta.iq
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/standup-timer.iq
+            dist/standup-timer-beta.iq
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

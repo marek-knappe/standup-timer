@@ -32,8 +32,16 @@ A simple, focused countdown timer for Garmin watches - perfect for stand-up meet
 ## Settings
 
 - **Duration**: Set timer length (1-90 minutes)
-- **Alert 1**: First warning time (turns yellow) - *auto-set to half of duration when you change duration*
-- **Alert 2**: Second warning time (turns magenta) - *default 1 minute, unchanged when duration changes*
+- **Alert 1**: First warning time (turns yellow)
+  - Toggle on/off
+  - Set custom time - *auto-set to half of duration when you change duration*
+- **Alert 2**: Second warning time (turns magenta)
+  - Toggle on/off
+  - Set custom time - *default 1 minute, unchanged when duration changes*
+- **Final Countdown**: Per-second vibration before finish
+  - 5 seconds
+  - 3 seconds
+  - Off
 - **Show Clock**: Toggle clock display at top
 - **Exit App**: Close the application
 
@@ -41,6 +49,7 @@ A simple, focused countdown timer for Garmin watches - perfect for stand-up meet
 - When you change **Duration**, Alert 1 automatically adjusts to **half the duration**
 - Alert 2 stays at your last setting (default: 1 minute before end)
 - You can manually override both alerts anytime
+- Alerts can be individually enabled/disabled
 
 ## Vibration Patterns
 
@@ -86,6 +95,32 @@ monkeydo bin/standup-timer.prg d2deltapx
 # Build release package
 monkeyc -e -d d2deltapx -f monkey.jungle -o bin/standup-timer.iq -y path/to/developer_key.der -r
 ```
+
+## CI/CD
+
+This project uses GitHub Actions to automatically build both production and beta versions.
+
+### Setup
+
+1. Encode your developer key as base64:
+   ```bash
+   base64 -i developer_key.der | tr -d '\n'
+   ```
+
+2. Add the output as a repository secret named `DEVELOPER_KEY_BASE64` in GitHub:
+   - Go to Settings → Secrets and variables → Actions
+   - Create new repository secret
+
+### Builds
+
+- **Production** (`standup-timer.iq`): Uses production app ID
+- **Beta** (`standup-timer-beta.iq`): Uses separate beta app ID with "β" suffix in name
+
+Builds are triggered on:
+- Push to main/master branch
+- Pull requests
+- Manual workflow dispatch
+- Git tags (creates GitHub release)
 
 ## License
 

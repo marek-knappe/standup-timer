@@ -22,6 +22,9 @@ var gAlert1Seconds as Number = 450;        // Half of duration (7:30)
 var gAlert2Seconds as Number = 60;         // 1 min before end
 var gAlert1Fired as Boolean = false;
 var gAlert2Fired as Boolean = false;
+var gAlert1Enabled as Boolean = true;      // Alert 1 on/off
+var gAlert2Enabled as Boolean = true;      // Alert 2 on/off
+var gFinalCountdown as Number = 5;         // 5, 3, or 0 (none)
 var gShowClock as Boolean = true;
 var gTimerView as TimerView?;
 
@@ -60,13 +63,13 @@ class TimerView extends WatchUi.View {
 
     private function checkAlerts() as Void {
         // Alert 1: 1 vibration (yellow warning)
-        if (!gAlert1Fired && gRemainingSeconds <= gAlert1Seconds && gRemainingSeconds > gAlert2Seconds) {
+        if (gAlert1Enabled && !gAlert1Fired && gRemainingSeconds <= gAlert1Seconds && gRemainingSeconds > gAlert2Seconds) {
             gAlert1Fired = true;
             vibrate([new Attention.VibeProfile(100, 500)]);
         }
         
         // Alert 2: 2 vibrations (magenta warning)
-        if (!gAlert2Fired && gRemainingSeconds <= gAlert2Seconds && gRemainingSeconds > 5) {
+        if (gAlert2Enabled && !gAlert2Fired && gRemainingSeconds <= gAlert2Seconds && gRemainingSeconds > gFinalCountdown) {
             gAlert2Fired = true;
             vibrate([
                 new Attention.VibeProfile(100, 500),
@@ -75,8 +78,8 @@ class TimerView extends WatchUi.View {
             ]);
         }
         
-        // Final 5 second countdown - short pulse each second
-        if (gRemainingSeconds <= 5 && gRemainingSeconds >= 1) {
+        // Final countdown - short pulse each second (if enabled)
+        if (gFinalCountdown > 0 && gRemainingSeconds <= gFinalCountdown && gRemainingSeconds >= 1) {
             vibrate([new Attention.VibeProfile(100, 100)]);
         }
     }
@@ -123,12 +126,12 @@ class TimerView extends WatchUi.View {
             statusText = "READY";
         } else if (gStatus == STATUS_RUNNING) {
             statusText = "RUNNING";
-            // Color changes for alerts
-            if (gRemainingSeconds <= 5) {
+            // Color changes for alerts (only if enabled)
+            if (gFinalCountdown > 0 && gRemainingSeconds <= gFinalCountdown) {
+                textColor = 0xFF00FF; // Magenta for final countdown
+            } else if (gAlert2Enabled && gRemainingSeconds <= gAlert2Seconds) {
                 textColor = 0xFF00FF; // Magenta
-            } else if (gRemainingSeconds <= gAlert2Seconds) {
-                textColor = 0xFF00FF; // Magenta
-            } else if (gRemainingSeconds <= gAlert1Seconds) {
+            } else if (gAlert1Enabled && gRemainingSeconds <= gAlert1Seconds) {
                 textColor = Graphics.COLOR_YELLOW;
             }
         }
@@ -195,6 +198,15 @@ class TimerView extends WatchUi.View {
         var a2 = Storage.getValue("alert2");
         if (a2 != null && a2 instanceof Number) { gAlert2Seconds = a2 as Number; }
         
+        var a1e = Storage.getValue("alert1en");
+        if (a1e != null && a1e instanceof Boolean) { gAlert1Enabled = a1e as Boolean; }
+        
+        var a2e = Storage.getValue("alert2en");
+        if (a2e != null && a2e instanceof Boolean) { gAlert2Enabled = a2e as Boolean; }
+        
+        var fc = Storage.getValue("finalcd");
+        if (fc != null && fc instanceof Number) { gFinalCountdown = fc as Number; }
+        
         var clk = Storage.getValue("clock");
         if (clk != null && clk instanceof Boolean) { gShowClock = clk as Boolean; }
     }
@@ -204,6 +216,9 @@ class TimerView extends WatchUi.View {
         Storage.setValue("duration", gDurationSeconds);
         Storage.setValue("alert1", gAlert1Seconds);
         Storage.setValue("alert2", gAlert2Seconds);
+        Storage.setValue("alert1en", gAlert1Enabled);
+        Storage.setValue("alert2en", gAlert2Enabled);
+        Storage.setValue("finalcd", gFinalCountdown);
         Storage.setValue("clock", gShowClock);
     }
 
