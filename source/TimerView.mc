@@ -62,14 +62,14 @@ class TimerView extends WatchUi.View {
                 startFinishedVibration();
             }
             WatchUi.requestUpdate();
-        } else if (gShowClock && gStatus != STATUS_FINISHED) {
-            // Only update once per minute for clock (saves power)
+        } else if (gShowClock) {
+            // Update once per minute for clock display (READY, PAUSED, or FINISHED)
             if (_tickCount >= 60) {
                 _tickCount = 0;
                 WatchUi.requestUpdate();
             }
         }
-        // No updates needed when paused/ready with clock hidden, or when finished
+        // No updates needed when clock is hidden and not running
     }
 
     private function checkAlerts() as Void {
@@ -154,7 +154,7 @@ class TimerView extends WatchUi.View {
 
         // Draw clock at top
         var timerY = height / 2;
-        if (gShowClock && gStatus != STATUS_FINISHED) {
+        if (gShowClock) {
             drawClock(dc, width);
             timerY = height / 2 + 15;
         }
@@ -256,5 +256,18 @@ class TimerView extends WatchUi.View {
         gRemainingSeconds = gDurationSeconds;
         gAlert1Fired = false;
         gAlert2Fired = false;
+        // Restart the timer if it was stopped (e.g., after finishing)
+        if (gTimerView != null) {
+            gTimerView.ensureTimerRunning();
+        }
+    }
+    
+    // Ensure the background timer is running (for screen updates)
+    function ensureTimerRunning() as Void {
+        if (_timer == null) {
+            _timer = new Timer.Timer();
+            _timer.start(method(:onTick), 1000, true);
+            _tickCount = 0;
+        }
     }
 }
