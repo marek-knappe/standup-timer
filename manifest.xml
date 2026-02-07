@@ -2,7 +2,7 @@
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
     <iq:application entry="StandupTimerApp" id="1a84e0de-c52e-48b2-b7ef-05c9d51ca391" 
                     launcherIcon="@Drawables.LauncherIcon" minSdkVersion="3.0.0" 
-                    name="@Strings.AppName" type="watch-app" version="1.0.3">
+                    name="@Strings.AppName" type="watch-app" version="1.0.4">
         <iq:products>
             <iq:product id="approachs62"/>
             <iq:product id="approachs7042mm"/>

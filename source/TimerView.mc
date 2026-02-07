@@ -32,6 +32,7 @@ var gTimerView as TimerView?;
 class TimerView extends WatchUi.View {
     private var _timer as Timer.Timer?;
     private var _vibeTimer as Timer.Timer?;
+    private var _tickCount as Number = 0;
 
     function initialize() {
         View.initialize();
@@ -46,9 +47,11 @@ class TimerView extends WatchUi.View {
     function onShow() as Void {
         _timer = new Timer.Timer();
         _timer.start(method(:onTick), 1000, true);
+        _tickCount = 0;
     }
 
     function onTick() as Void {
+        _tickCount++;
         if (gStatus == STATUS_RUNNING) {
             if (gRemainingSeconds > 0) {
                 gRemainingSeconds -= 1;
@@ -58,8 +61,15 @@ class TimerView extends WatchUi.View {
                 gStatus = STATUS_FINISHED;
                 startFinishedVibration();
             }
+            WatchUi.requestUpdate();
+        } else if (gShowClock && gStatus != STATUS_FINISHED) {
+            // Only update once per minute for clock (saves power)
+            if (_tickCount >= 60) {
+                _tickCount = 0;
+                WatchUi.requestUpdate();
+            }
         }
-        WatchUi.requestUpdate();
+        // No updates needed when paused/ready with clock hidden, or when finished
     }
 
     private function checkAlerts() as Void {
@@ -170,9 +180,17 @@ class TimerView extends WatchUi.View {
         dc.fillRectangle(0, 20, width, 35);
 
         var clockTime = System.getClockTime();
-        var timeStr = clockTime.hour.format("%02d") + ":" + 
+        var timeStr;
+        if (gStatus == STATUS_RUNNING) {
+            // Show seconds only when timer is running
+            timeStr = clockTime.hour.format("%02d") + ":" + 
                       clockTime.min.format("%02d") + ":" + 
                       clockTime.sec.format("%02d");
+        } else {
+            // Hide seconds when not running (saves power - no need for per-second updates)
+            timeStr = clockTime.hour.format("%02d") + ":" + 
+                      clockTime.min.format("%02d");
+        }
 
         dc.setColor(clockText, Graphics.COLOR_TRANSPARENT);
         dc.drawText(width / 2, 38, Graphics.FONT_SMALL, timeStr,
