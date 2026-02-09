@@ -45,6 +45,10 @@ class TimerView extends WatchUi.View {
     }
 
     function onShow() as Void {
+        // Stop any existing timer first to prevent duplicates
+        if (_timer != null) {
+            _timer.stop();
+        }
         _timer = new Timer.Timer();
         _timer.start(method(:onTick), 1000, true);
         _tickCount = 0;
