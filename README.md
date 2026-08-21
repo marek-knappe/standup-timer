@@ -64,7 +64,7 @@ A simple, focused countdown timer for Garmin watches - perfect for stand-up meet
 
 Supports 80+ Garmin devices including:
 - Fenix 5/6/7/8 series
-- Forerunner 245/255/265/745/945/955/965
+- Forerunner 245/255/265/745/945/955/965/970
 - Venu / Venu 2 / Venu 3
 - Vivoactive 3/4/5
 - D2 Delta / D2 Charlie
